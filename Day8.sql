@@ -135,3 +135,15 @@ COUNT(CASE
 END) AS pg_13
 FROM film
 GROUP BY category
+--CAST
+--string/number/datetime
+SELECT *,
+--string => number (string phai chua chu so khong duoc chua abc)
+CAST(ticket_no AS bigint),
+--number=>string
+CAST(amount AS VARCHAR)
+FROM ticket_flights;
+--datetime sang string
+SELECT *,
+CAST(scheduled_departure AS VARCHAR)
+FROM flights
