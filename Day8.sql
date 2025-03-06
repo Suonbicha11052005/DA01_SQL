@@ -121,15 +121,15 @@ CASE
 	WHEN length BETWEEN 60 AND 120 THEN 'medium'
 	WHEN length > 120 THEN  'long'
 END AS category,
-COUNT(CASE
+SUM(CASE
 	WHEN rating = 'R' THEN 1
 	ELSE 0
 END) AS r,
-COUNT(CASE
+SUM(CASE
 	WHEN rating = 'PG' THEN 1
 	ELSE 0
 END) AS pg,
-COUNT(CASE
+SUM(CASE
 	WHEN rating = 'PG-13' THEN 1
 	ELSE 0
 END) AS pg_13
