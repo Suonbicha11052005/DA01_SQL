@@ -47,4 +47,19 @@ LEFT JOIN boarding_passes AS t2
 ON t1.seat_no=t2.seat_no
 GROUP BY line
 ORDER BY COUNT(flight_id) DESC
-
+--FULL JOIN
+--Dem co bn ve may bay ma k len duoc may bay
+SELECT COUNT(*)
+FROM boarding_passes AS t1
+FULL JOIN tickets AS t2
+ON t1.ticket_no=t2.ticket_no
+WHERE t1.ticket_no IS NULL
+--JOIN ON MULTIPLE CONDITIONS
+--Tinh gia trung binh cua tung so ghe may bay
+SELECT t1.seat_no,
+AVG(t2.amount) AS avg_amount
+FROM boarding_passes AS t1
+LEFT JOIN ticket_flights AS t2
+ON t1.ticket_no=t2.ticket_no AND t1.flight_id=t2.flight_id
+GROUP BY t1.seat_no
+ORDER BY avg_amount DESC
