@@ -63,3 +63,31 @@ LEFT JOIN ticket_flights AS t2
 ON t1.ticket_no=t2.ticket_no AND t1.flight_id=t2.flight_id
 GROUP BY t1.seat_no
 ORDER BY avg_amount DESC
+--JOIN MULTIPE TABLES CHALLENGE
+--Truy van lay first_name,last_name, email va quoc gia cua tat ca cac khach hang
+--Nhung khach hang nao den tu brazil
+SELECT t4.first_name,t4.last_name,t4.email,t1.country
+FROM country AS t1
+INNER JOIN city AS t2 ON t1.country_id=t2.country_id
+INNER JOIN address AS t3 ON t2.city_id=t3.city_id
+INNER JOIN customer AS t4 ON t3.address_id=t4.address_id
+WHERE t1.country='Brazil'
+--SELF JOIN
+--Hien thi thong tin cua tat ca nhan vien
+SELECT emp.employee_id,emp.name AS emp_name,emp.manager_id,mng.name AS mng_name
+FROM employee AS emp
+LEFT JOIN employee AS mng
+ON emp.manager_id=mng.employee_id
+--SELF JOIN CHALLENGE
+--Tim nhung bo phim co cung thoi luong phim key khong phai la khoa chinh
+SELECT t1.title AS title1,t2.title AS title2,t1.length
+FROM film AS t1
+JOIN film AS t2 ON t1.length=t2.length
+WHERE t1.title<>t2.title
+--UNION
+SELECT first_name,'actor' AS source FROM actor
+UNION ALL
+SELECT first_name,'customer' AS source FROM customer
+UNION ALL
+SELECT first_name,'staff' AS source FROM staff
+ORDER BY first_name
