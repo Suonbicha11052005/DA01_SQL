@@ -78,3 +78,42 @@ JOIN country AS d ON c.country_id=d.country_id
 JOIN payment AS e ON a.customer_id=e.customer_id
 GROUP BY a.first_name || ' ' || a.last_name,d.country) AS f
 WHERE f.rank<=3
+--WINDOW FUNCTION WITH FIRST_VALUE
+--So tien thanh toan cho don hang dau tien va gan day nhat cua tung khach hang
+SELECT * FROM(
+SELECT customer_id,payment_date,amount,
+ROW_NUMBER() OVER(PARTITION BY customer_id ORDER BY payment_date) AS stt
+FROM payment) AS a
+WHERE a.stt = 1;
+--C2: FIRST_VALUE
+SELECT customer_id,payment_date,amount,
+FIRST_VALUE(amount) OVER(PARTITION BY customer_id ORDER BY payment_date) AS first_amount,
+FIRST_VALUE(amount) OVER(PARTITION BY customer_id ORDER BY payment_date DESC) AS last_amount
+FROM payment
+--WINDOW FUNCTION WITH LEAD(),LAG()
+--Tim so tien chenh lech giua cac lan thanh toan cua tung khach hang
+SELECT customer_id,payment_date,amount,
+LEAD(amount,3) OVER(PARTITION BY customer_id ORDER BY payment_date) AS next_amount,
+LEAD(payment_date,3) OVER(PARTITION BY customer_id ORDER BY payment_date) AS next_date,
+amount-LEAD(amount,3) OVER(PARTITION BY customer_id ORDER BY payment_date) AS diff
+FROM payment
+SELECT payment_date,amount,
+LAG(amount) OVER(ORDER BY payment_date) AS previous_amount,
+LAG(payment_date) OVER(ORDER BY payment_date) AS previous_date,
+amount-LAG(amount) OVER(ORDER BY payment_date) AS diff
+FROM payment       
+--LEAD(),LAG() CHALLENGE
+--Truy van tra ve doanh thu trong ngay va doanh thu cua ngay hom truoc.
+--Sau do tinh phan tram tang truong so voi ngay hom truoc
+WITH twt_main_payment AS(
+SELECT DATE(payment_date) AS payment_date,
+SUM(amount) AS amount
+FROM payment
+GROUP BY DATE(payment_date)
+)
+SELECT payment_date,amount,
+LAG(payment_date) OVER(ORDER BY payment_date) AS previous_date,
+LAG(amount) OVER(ORDER BY payment_date) AS previous_amount,
+ROUND((amount-LAG(amount) OVER(ORDER BY payment_date))
+/LAG(amount) OVER(ORDER BY payment_date)*100,2) AS percent_diff
+FROM twt_main_payment
