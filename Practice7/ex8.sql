@@ -13,4 +13,4 @@ GROUP BY a.artist_name
 )
 SELECT * FROM twt_rank_appear_top10
 WHERE artist_rank<=5
-ORDER BY rank DESC,artist_name
+ORDER BY rank,artist_name
