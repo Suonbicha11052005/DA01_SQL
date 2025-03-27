@@ -1,4 +1,4 @@
--1. Chuyển đổi kiểu dữ liệu phù hợp cho các trường ( sử dụng câu lệnh ALTER) 
+--1. Chuyển đổi kiểu dữ liệu phù hợp cho các trường ( sử dụng câu lệnh ALTER) 
 ALTER TABLE sales_dataset_rfm_prj 
 ALTER COLUMN ordernumber TYPE INT USING ordernumber::integer,
 ALTER COLUMN quantityordered TYPE INT USING quantityordered::integer,
@@ -40,3 +40,25 @@ UPDATE sales_dataset_rfm_prj
 SET qtr_id=EXTRACT(QUARTER FROM orderdate),
 	month_id=EXTRACT(MONTH FROM orderdate),
 	year_id=EXTRACT(YEAR FROM orderdate);
+--5.
+--Danh sach outlier se luu trong twt_outlier
+WITH cte AS(
+SELECT *,
+(SELECT AVG(quantityordered) FROM sales_dataset_rfm_prj) AS avg_quantityordered,
+(SELECT stddev(quantityordered) FROM sales_dataset_rfm_prj) AS stddev_quantityordered
+FROM sales_dataset_rfm_prj
+),
+twt_outlier AS(
+SELECT *,
+(quantityordered-avg_quantityordered)/stddev_quantityordered AS z_score
+FROM cte
+WHERE abs((quantityordered-avg_quantityordered)/stddev_quantityordered)>3
+)
+/*--Xu ly outlier
+--C1:
+UPDATE sales_dataset_rfm_prj
+SET quantityordered=(SELECT AVG(quantityordered) FROM sales_dataset_rfm_prj)
+WHERE quantityordered IN(SELECT quantityordered FROM twt_outlier);
+--C2:
+DELETE FROM sales_dataset_rfm_prj
+WHERE quantityordered IN(SELECT quantityordered FROM twt_outlier);*/
