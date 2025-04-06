@@ -88,4 +88,43 @@ Gioi tinh FEMALE: tre nhat 12 so luong 463
                   lon nhat 70 so luong 460*/
 --4.Top 5 sản phẩm mỗi tháng.
 --Thống kê top 5 sản phẩm có lợi nhuận cao nhất từng tháng (xếp hạng cho từng sản phẩm). 
-
+WITH sale_cost_per_month_product AS(
+SELECT
+EXTRACT(YEAR FROM created_at) AS year,
+EXTRACT(MONTH FROM created_at) AS month, 
+product_id,
+name,
+SUM(sale_price) OVER(PARTITION BY product_id,EXTRACT(YEAR FROM created_at),EXTRACT(MONTH FROM created_at)) AS sales,
+cost*COUNT(*) OVER(PARTITION BY product_id,EXTRACT(YEAR FROM created_at),EXTRACT(MONTH FROM created_at)) AS cost
+FROM bigquery-public-data.thelook_ecommerce.order_items AS a
+JOIN bigquery-public-data.thelook_ecommerce.products AS b
+ON a.product_id = b.id)
+,ranked_profit_per_month AS(
+SELECT
+*,
+sales-cost AS profit,
+DENSE_RANK() OVER(PARTITION BY year,month ORDER BY sales-cost DESC) AS rank_per_month
+FROM sale_cost_per_month_product
+ORDER BY year,month)
+SELECT 
+year || '-' || month AS month_year,
+product_id,
+name AS product_name,
+sales,
+cost,
+profit,
+ranked_profit_per_month
+FROM ranked_profit_per_month
+WHERE rank_per_month <=5;
+--5.Doanh thu tính đến thời điểm hiện tại trên mỗi danh mục
+--Thống kê tổng doanh thu theo ngày của từng danh mục sản phẩm (category) trong 3 tháng qua ( giả sử ngày hiện tại là 15/4/2022)
+SELECT
+DATE(created_at) AS dates,
+category AS product_categories,
+SUM(sale_price) AS revenue
+FROM bigquery-public-data.thelook_ecommerce.order_items AS a
+JOIN bigquery-public-data.thelook_ecommerce.products AS b
+ON a.product_id = b.id
+WHERE DATE(created_at) >= DATE_SUB('2022-04-15',INTERVAL 3 MONTH) -- DATE_SUB : tru di 1 khoan thoi gian ke tu ngay cu the dung trong bigquery va mysql
+GROUP BY DATE(created_at),category
+ORDER BY product_categories,dates
