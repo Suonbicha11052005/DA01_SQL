@@ -95,7 +95,7 @@ EXTRACT(MONTH FROM created_at) AS month,
 product_id,
 name,
 SUM(sale_price) OVER(PARTITION BY product_id,EXTRACT(YEAR FROM created_at),EXTRACT(MONTH FROM created_at)) AS sales,
-cost*COUNT(*) OVER(PARTITION BY product_id,EXTRACT(YEAR FROM created_at),EXTRACT(MONTH FROM created_at)) AS cost
+SUM(cost) OVER(PARTITION BY product_id,EXTRACT(YEAR FROM created_at),EXTRACT(MONTH FROM created_at)) AS cost -- cost*COUNT cũng ra kq đúng
 FROM bigquery-public-data.thelook_ecommerce.order_items AS a
 JOIN bigquery-public-data.thelook_ecommerce.products AS b
 ON a.product_id = b.id)
@@ -113,7 +113,7 @@ name AS product_name,
 sales,
 cost,
 profit,
-ranked_profit_per_month
+rank_per_month
 FROM ranked_profit_per_month
 WHERE rank_per_month <=5;
 --5.Doanh thu tính đến thời điểm hiện tại trên mỗi danh mục
